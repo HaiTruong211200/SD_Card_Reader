@@ -20,6 +20,8 @@
 #include "main.h"
 #include "fatfs.h"
 #include <string.h>
+#include "sd_spi.h"
+#include "storage_manager.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -45,13 +47,38 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
+/* Test Work 3*/
 FRESULT sd_result;
 
 UINT sd_bytes_written = 0;
 UINT sd_bytes_read = 0;
+bool sd_init_ok;
+bool sd_ready;
+SD_CardType sd_type;
+uint32_t sd_sector_count;
 
 char sd_write_data[] = "Hello from STM32!\r\n";
 char sd_read_data[64];
+
+/* Test Work 3*/
+FRESULT mount_result;
+FRESULT file_test_result;
+FRESULT append_result;
+FRESULT mkdir_result;
+FRESULT write_log_result;
+FRESULT read_log_result;
+FRESULT list_result;
+FRESULT capacity_result;
+FRESULT delete_result;
+
+char read_buffer[128];
+char dir_list[STORAGE_DIR_LIST_SIZE];
+
+StorageCapacityInfo capacity_info;
+
+// Test Work 5
+FRESULT display_info_result;
+StorageDisplayInfo display_info;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -219,7 +246,41 @@ int main(void)
   MX_SPI1_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  sd_result = SD_FileTest();
+//  sd_result = SD_FileTest();
+//  sd_init_ok = SD_Init();
+//  sd_ready = SD_IsReady();
+//  sd_type = SD_GetCardType();
+//  sd_sector_count = SD_GetSectorCount();
+  // Test work 3
+  mount_result = Storage_Mount();
+
+  if (mount_result == FR_OK)
+  {
+      file_test_result = Storage_FileTest();
+
+      append_result = Storage_AppendTest();
+
+      mkdir_result = Storage_CreateDir("LOG");
+
+      write_log_result = Storage_WriteTextFile(
+          "LOG/log.txt",
+          "Log file created by STM32\r\n"
+      );
+
+      read_log_result = Storage_ReadTextFile(
+          "LOG/log.txt",
+          read_buffer,
+          sizeof(read_buffer)
+      );
+
+      list_result = Storage_ListDir("/", dir_list, sizeof(dir_list));
+
+      capacity_result = Storage_GetCapacity(&capacity_info);
+
+      delete_result = Storage_DeleteFile("LOG/log.txt");
+      display_info_result = Storage_GetDisplayInfo(&display_info);
+  }
+  HAL_Delay(100);
   /* USER CODE END 2 */
 
   /* Infinite loop */

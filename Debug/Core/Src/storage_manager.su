@@ -1,0 +1,11 @@
+../Core/Src/storage_manager.c:10:9:Storage_Mount	8	static
+../Core/Src/storage_manager.c:19:9:Storage_Unmount	8	static
+../Core/Src/storage_manager.c:33:9:Storage_FileTest	672	static
+../Core/Src/storage_manager.c:115:9:Storage_AppendTest	616	static
+../Core/Src/storage_manager.c:162:9:Storage_CreateDir	24	static
+../Core/Src/storage_manager.c:186:9:Storage_WriteTextFile	592	static
+../Core/Src/storage_manager.c:239:9:Storage_ReadTextFile	592	static
+../Core/Src/storage_manager.c:284:9:Storage_ListDir	120	static
+../Core/Src/storage_manager.c:355:9:Storage_DeleteFile	24	static
+../Core/Src/storage_manager.c:378:9:Storage_GetCapacity	40	static
+../Core/Src/storage_manager.c:424:9:Storage_GetDisplayInfo	32	static
