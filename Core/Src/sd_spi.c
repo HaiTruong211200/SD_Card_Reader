@@ -359,7 +359,9 @@ static bool SD_TransmitDataBlock(
      */
     if (token == SD_TOKEN_STOP_MULTI_WRITE)
     {
-        return true;
+        /* Bắt buộc gửi 1 dummy byte để thẻ chuyển sang trạng thái BUSY */
+        SD_SPI_Transfer(0xFFU);
+        return SD_WaitReady(SD_WRITE_TIMEOUT_MS);
     }
 
     SD_SPI_TransmitBuffer(buffer, SD_SECTOR_SIZE);
@@ -370,7 +372,15 @@ static bool SD_TransmitDataBlock(
     SD_SPI_Transfer(0xFFU);
     SD_SPI_Transfer(0xFFU);
 
-    response = SD_SPI_Transfer(0xFFU);
+    /*
+     * Chờ nhận data response token (thường mất 1-8 byte clock)
+     * Token có dạng xxx0xxxx, do đó sẽ khác 0xFF.
+     */
+    uint32_t wait_start = HAL_GetTick();
+    do
+    {
+        response = SD_SPI_Transfer(0xFFU);
+    } while (response == 0xFFU && (HAL_GetTick() - wait_start) < 100);
 
     /*
      * Năm bit thấp bằng 0x05 nghĩa là dữ liệu được chấp nhận.
@@ -867,12 +877,8 @@ bool SD_WriteBlocks(
         return false;
     }
 
-    bool ready = SD_WaitReady(
-        SD_WRITE_TIMEOUT_MS
-    );
-
+    bool ready = SD_WaitReady(SD_WRITE_TIMEOUT_MS);
     SD_Deselect();
-
     return ready;
 }
 

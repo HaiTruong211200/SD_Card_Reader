@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (13.3.rel1)
+# Toolchain: GNU Tools for STM32 (14.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -9,8 +9,12 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include USB_DEVICE/Target/subdir.mk
+-include USB_DEVICE/App/subdir.mk
 -include Middlewares/Third_Party/FatFs/src/option/subdir.mk
 -include Middlewares/Third_Party/FatFs/src/subdir.mk
+-include Middlewares/ST/STM32_USB_Device_Library/Core/Src/subdir.mk
+-include Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/subdir.mk
 -include FATFS/Target/subdir.mk
 -include FATFS/App/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
@@ -64,8 +68,8 @@ all: main-build
 main-build: SD_Card.elf secondary-outputs
 
 # Tool invocations
-SD_Card.elf SD_Card.map: $(OBJS) $(USER_OBJS) C:\Users\Admin\OneDrive\ -\ Hanoi\ University\ of\ Science\ and\ Technology\Documents\STM32Projects\SD_Card\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "SD_Card.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Admin\OneDrive - Hanoi University of Science and Technology\Documents\STM32Projects\SD_Card\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SD_Card.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+SD_Card.elf SD_Card.map: $(OBJS) $(USER_OBJS) C:\class_materials\he_nhung\BTL\SD_Card_Reader\STM32F429ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "SD_Card.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\class_materials\he_nhung\BTL\SD_Card_Reader\STM32F429ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="SD_Card.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

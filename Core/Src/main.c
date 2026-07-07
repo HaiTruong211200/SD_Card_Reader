@@ -19,13 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "fatfs.h"
-#include <string.h>
-#include "sd_spi.h"
-#include "storage_manager.h"
+#include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdbool.h>
+#include "sd_spi.h"
+#include "storage_manager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -245,6 +245,7 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_FATFS_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 //  sd_result = SD_FileTest();
 //  sd_init_ok = SD_Init();
@@ -252,34 +253,34 @@ int main(void)
 //  sd_type = SD_GetCardType();
 //  sd_sector_count = SD_GetSectorCount();
   // Test work 3
-  mount_result = Storage_Mount();
-
-  if (mount_result == FR_OK)
-  {
-      file_test_result = Storage_FileTest();
-
-      append_result = Storage_AppendTest();
-
-      mkdir_result = Storage_CreateDir("LOG");
-
-      write_log_result = Storage_WriteTextFile(
-          "LOG/log.txt",
-          "Log file created by STM32\r\n"
-      );
-
-      read_log_result = Storage_ReadTextFile(
-          "LOG/log.txt",
-          read_buffer,
-          sizeof(read_buffer)
-      );
-
-      list_result = Storage_ListDir("/", dir_list, sizeof(dir_list));
-
-      capacity_result = Storage_GetCapacity(&capacity_info);
-
-      delete_result = Storage_DeleteFile("LOG/log.txt");
-      display_info_result = Storage_GetDisplayInfo(&display_info);
-  }
+//  mount_result = Storage_Mount();
+//
+//  if (mount_result == FR_OK)
+//  {
+//      file_test_result = Storage_FileTest();
+//
+//      append_result = Storage_AppendTest();
+//
+//      mkdir_result = Storage_CreateDir("LOG");
+//
+//      write_log_result = Storage_WriteTextFile(
+//          "LOG/log.txt",
+//          "Log file created by STM32\r\n"
+//      );
+//
+//      read_log_result = Storage_ReadTextFile(
+//          "LOG/log.txt",
+//          read_buffer,
+//          sizeof(read_buffer)
+//      );
+//
+//      list_result = Storage_ListDir("/", dir_list, sizeof(dir_list));
+//
+//      capacity_result = Storage_GetCapacity(&capacity_info);
+//
+//      delete_result = Storage_DeleteFile("LOG/log.txt");
+//      display_info_result = Storage_GetDisplayInfo(&display_info);
+//  }
   HAL_Delay(100);
   /* USER CODE END 2 */
 
@@ -318,7 +319,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
