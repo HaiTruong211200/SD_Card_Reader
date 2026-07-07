@@ -22,7 +22,8 @@
 #include "usbd_storage_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "ff_gen_drv.h"
+#include "user_diskio.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -178,9 +179,11 @@ USBD_StorageTypeDef USBD_Storage_Interface_fops_HS =
 int8_t STORAGE_Init_HS(uint8_t lun)
 {
   /* USER CODE BEGIN 9 */
-  UNUSED(lun);
-
-  return (USBD_OK);
+  if (USER_initialize(lun) == 0)
+  {
+    return USBD_OK;
+  }
+  return USBD_FAIL;
   /* USER CODE END 9 */
 }
 
@@ -194,11 +197,21 @@ int8_t STORAGE_Init_HS(uint8_t lun)
 int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_size)
 {
   /* USER CODE BEGIN 10 */
-  UNUSED(lun);
+  DWORD sector_count = 0;
+  WORD sector_size = 0;
 
-  *block_num  = STORAGE_BLK_NBR;
-  *block_size = STORAGE_BLK_SIZ;
-  return (USBD_OK);
+  if (USER_ioctl(lun, GET_SECTOR_COUNT, &sector_count) != RES_OK)
+  {
+    return USBD_FAIL;
+  }
+  if (USER_ioctl(lun, GET_SECTOR_SIZE, &sector_size) != RES_OK)
+  {
+    return USBD_FAIL;
+  }
+
+  *block_num = sector_count;
+  *block_size = sector_size;
+  return USBD_OK;
   /* USER CODE END 10 */
 }
 
@@ -210,9 +223,11 @@ int8_t STORAGE_GetCapacity_HS(uint8_t lun, uint32_t *block_num, uint16_t *block_
 int8_t STORAGE_IsReady_HS(uint8_t lun)
 {
   /* USER CODE BEGIN 11 */
-  UNUSED(lun);
-
-  return (USBD_OK);
+  if (USER_status(lun) == 0)
+  {
+    return USBD_OK;
+  }
+  return USBD_FAIL;
   /* USER CODE END 11 */
 }
 
@@ -239,12 +254,11 @@ int8_t STORAGE_IsWriteProtected_HS(uint8_t lun)
 int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 13 */
-  UNUSED(lun);
-  UNUSED(buf);
-  UNUSED(blk_addr);
-  UNUSED(blk_len);
-
-  return (USBD_OK);
+  if (USER_read(lun, buf, blk_addr, blk_len) == RES_OK)
+  {
+    return USBD_OK;
+  }
+  return USBD_FAIL;
   /* USER CODE END 13 */
 }
 
@@ -259,12 +273,11 @@ int8_t STORAGE_Read_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t bl
 int8_t STORAGE_Write_HS(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len)
 {
   /* USER CODE BEGIN 14 */
-  UNUSED(lun);
-  UNUSED(buf);
-  UNUSED(blk_addr);
-  UNUSED(blk_len);
-
-  return (USBD_OK);
+  if (USER_write(lun, buf, blk_addr, blk_len) == RES_OK)
+  {
+    return USBD_OK;
+  }
+  return USBD_FAIL;
   /* USER CODE END 14 */
 }
 

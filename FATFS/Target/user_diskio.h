@@ -34,6 +34,12 @@
 /* Exported functions ------------------------------------------------------- */
 extern Diskio_drvTypeDef  USER_Driver;
 
+DSTATUS USER_initialize(BYTE pdrv);
+DSTATUS USER_status(BYTE pdrv);
+DRESULT USER_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count);
+DRESULT USER_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count);
+DRESULT USER_ioctl(BYTE pdrv, BYTE cmd, void *buff);
+
 /* USER CODE END 0 */
 
 #ifdef __cplusplus

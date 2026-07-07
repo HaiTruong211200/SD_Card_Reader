@@ -6,6 +6,12 @@
  */
 extern SPI_HandleTypeDef hspi1;
 
+/* Giảm tốc độ SPI khi khởi tạo thẻ (ổn định hơn với dây dupont dài) */
+#define SD_SPI_SLOW() \
+  MODIFY_REG(hspi1.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_256)
+#define SD_SPI_FAST() \
+  MODIFY_REG(hspi1.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_128)
+
 /* Các lệnh cơ bản của thẻ SD */
 #define SD_CMD0    0U
 #define SD_CMD8    8U
@@ -474,12 +480,13 @@ bool SD_Init(void)
     sd_card_type = SD_CARD_UNKNOWN;
     sd_sector_count = 0U;
 
+    SD_SPI_SLOW();
     SD_CS_High();
 
     /*
      * Chờ nguồn thẻ ổn định.
      */
-    HAL_Delay(10U);
+    HAL_Delay(100U);
 
     /*
      * Cấp ít nhất 74 xung clock khi CS ở mức cao.
@@ -661,6 +668,7 @@ bool SD_Init(void)
     }
 
     sd_initialized = true;
+    SD_SPI_FAST();
 
     return true;
 }

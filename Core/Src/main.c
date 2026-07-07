@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,13 +48,7 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-FRESULT sd_result;
 
-UINT sd_bytes_written = 0;
-UINT sd_bytes_read = 0;
-
-char sd_write_data[] = "Hello from STM32!\r\n";
-char sd_read_data[64];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -62,132 +57,21 @@ static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static FRESULT SD_FileTest(void)
-{
-    FIL file;
-    FRESULT result;
-
-    sd_bytes_written = 0;
-    sd_bytes_read = 0;
-
-    memset(sd_read_data, 0, sizeof(sd_read_data));
-
-    /* Mount thẻ SD */
-    result = f_mount(&USERFatFS, USERPath, 1);
-
-    if (result != FR_OK)
-    {
-        return result;
-    }
-
-    /* Tạo mới hoặc ghi đè test.txt */
-    result = f_open(
-        &file,
-        "test.txt",
-        FA_CREATE_ALWAYS | FA_WRITE
-    );
-
-    if (result != FR_OK)
-    {
-        return result;
-    }
-
-    /* Ghi dữ liệu */
-    result = f_write(
-        &file,
-        sd_write_data,
-        strlen(sd_write_data),
-        &sd_bytes_written
-    );
-
-    if (result != FR_OK)
-    {
-        f_close(&file);
-        return result;
-    }
-
-    /* Kiểm tra số byte đã ghi */
-    if (sd_bytes_written != strlen(sd_write_data))
-    {
-        f_close(&file);
-        return FR_DISK_ERR;
-    }
-
-    /* Đẩy dữ liệu xuống thẻ */
-    result = f_sync(&file);
-
-    if (result != FR_OK)
-    {
-        f_close(&file);
-        return result;
-    }
-
-    /* Đóng file */
-    result = f_close(&file);
-
-    if (result != FR_OK)
-    {
-        return result;
-    }
-
-    /* Mở lại file để đọc */
-    result = f_open(
-        &file,
-        "test.txt",
-        FA_READ
-    );
-
-    if (result != FR_OK)
-    {
-        return result;
-    }
-
-    /* Đọc nội dung */
-    result = f_read(
-        &file,
-        sd_read_data,
-        sizeof(sd_read_data) - 1,
-        &sd_bytes_read
-    );
-
-    if (result != FR_OK)
-    {
-        f_close(&file);
-        return result;
-    }
-
-    sd_read_data[sd_bytes_read] = '\0';
-
-    result = f_close(&file);
-
-    if (result != FR_OK)
-    {
-        return result;
-    }
-
-    /* So sánh số byte */
-    if (sd_bytes_read != sd_bytes_written)
-    {
-        return FR_INT_ERR;
-    }
-
-    /* So sánh nội dung */
-    if (memcmp(
-            sd_write_data,
-            sd_read_data,
-            sd_bytes_read
-        ) != 0)
-    {
-        return FR_INT_ERR;
-    }
-
-    return FR_OK;
-}
+static void SD_DemoRun(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void myprintf(const char *fmt, ...)
+{
+  static char buffer[256];
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buffer, sizeof(buffer), fmt, args);
+  va_end(args);
 
+  HAL_UART_Transmit(&huart1, (uint8_t *)buffer, strlen(buffer), HAL_MAX_DELAY);
+}
 /* USER CODE END 0 */
 
 /**
@@ -224,7 +108,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
-  sd_result = SD_FileTest();
+  SD_DemoRun();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -373,7 +257,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(SD_CS_GPIO_Port, SD_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : SD_CS_Pin */
   GPIO_InitStruct.Pin = SD_CS_Pin;
@@ -388,7 +272,96 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+static void SD_DemoRun(void)
+{
+  FATFS fatFs;
+  FIL fil;
+  FRESULT fres;
 
+  myprintf("\r\n~ SD card demo ~\r\n");
+  myprintf("SPI: SCK=PA5 MISO=PA6 MOSI=PA7 CS=PG13\r\n\r\n");
+  HAL_Delay(500);
+
+  fres = f_mount(&fatFs, "", 1);
+  for (uint8_t retry = 0; fres != FR_OK && retry < 10U; retry++)
+  {
+    if (retry == 0U)
+    {
+      myprintf("f_mount error (%i) = FR_NOT_READY (SD init fail)\r\n", fres);
+      myprintf("Check: module SPI (not onboard slot), PA5/6/7/PG13, 3.3V, GND\r\n");
+    }
+    else
+    {
+      myprintf("f_mount error (%i) retry %u/10\r\n", fres, retry);
+    }
+    HAL_Delay(1000);
+    fres = f_mount(&fatFs, "", 1);
+  }
+
+  if (fres != FR_OK)
+  {
+    myprintf("SD mount failed. Fix wiring then RESET board.\r\n");
+    return;
+  }
+
+  DWORD free_clusters;
+  FATFS *getFreeFs;
+  fres = f_getfree("", &free_clusters, &getFreeFs);
+  if (fres == FR_OK)
+  {
+    DWORD total_sectors = (getFreeFs->n_fatent - 2) * getFreeFs->csize;
+    DWORD free_sectors = free_clusters * getFreeFs->csize;
+    myprintf("SD card stats:\r\n%10lu KiB total.\r\n%10lu KiB free.\r\n",
+             total_sectors / 2, free_sectors / 2);
+  }
+  else
+  {
+    myprintf("f_getfree error (%i)\r\n", fres);
+  }
+
+  fres = f_open(&fil, "test.txt", FA_READ);
+  if (fres == FR_OK)
+  {
+    BYTE readBuf[30];
+    TCHAR *rres = f_gets((TCHAR *)readBuf, 30, &fil);
+    if (rres != 0)
+    {
+      myprintf("Read from test.txt: %s\r\n", readBuf);
+    }
+    else
+    {
+      myprintf("f_gets error\r\n");
+    }
+    f_close(&fil);
+  }
+  else
+  {
+    myprintf("f_open test.txt error (%i)\r\n", fres);
+  }
+
+  fres = f_open(&fil, "write.txt", FA_WRITE | FA_OPEN_ALWAYS | FA_CREATE_ALWAYS);
+  if (fres == FR_OK)
+  {
+    const char *msg = "a new file is made!";
+    UINT bytesWrote;
+    fres = f_write(&fil, msg, 19, &bytesWrote);
+    if (fres == FR_OK)
+    {
+      myprintf("Wrote %u bytes to write.txt\r\n", bytesWrote);
+    }
+    else
+    {
+      myprintf("f_write error (%i)\r\n", fres);
+    }
+    f_close(&fil);
+  }
+  else
+  {
+    myprintf("f_open write.txt error (%i)\r\n", fres);
+  }
+
+  f_mount(NULL, "", 0);
+}
 /* USER CODE END 4 */
 
 /**
