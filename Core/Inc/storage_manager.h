@@ -1,61 +1,53 @@
-#ifndef STORAGE_MANAGER_H
-#define STORAGE_MANAGER_H
+#ifndef INC_STORAGE_MANAGER_H_
+#define INC_STORAGE_MANAGER_H_
 
 #include "fatfs.h"
-#include <stdint.h>
+#include <stdbool.h>
 
-#define STORAGE_DIR_LIST_SIZE 512U
+bool Storage_Mount(void);
+bool Storage_CreateAndWriteTest(void);
+bool Storage_ReadTest(void);
+bool Storage_CompareTest(void);
+
+bool Storage_AppendTest(void);
+bool Storage_ReadAfterAppendTest(void);
+bool Storage_CompareAfterAppendTest(void);
+bool Storage_DeleteTest(void);
+
+bool Storage_GetInfo(void);
+
+extern uint64_t storage_total_bytes;
+extern uint64_t storage_free_bytes;
+extern uint64_t storage_used_bytes;
+
+extern FRESULT storage_fr;
+extern UINT storage_bytes_written;
+extern UINT storage_bytes_read;
+extern char storage_read_data[64];
+
+static const char storage_append_data[] =
+    "Appended line\r\n";
+
+static const char storage_expected_after_append[] =
+    "Hello from STM32!\r\n"
+    "Appended line\r\n";
+
+#define STORAGE_MAX_FILES 20
+#define STORAGE_NAME_LENGTH 64
+
+bool Storage_ListRoot(void);
+
+extern uint32_t storage_file_count;
+extern char storage_file_names[STORAGE_MAX_FILES][STORAGE_NAME_LENGTH];
 
 typedef struct
 {
-    uint32_t total_mb;
-    uint32_t free_mb;
-    uint32_t used_mb;
-} StorageCapacityInfo;
+    bool ready;
+    uint64_t total_bytes;
+    uint64_t used_bytes;
+    uint64_t free_bytes;
+} StorageInfo;
 
-typedef enum
-{
-    STORAGE_STATUS_NO_CARD = 0,
-    STORAGE_STATUS_READY,
-    STORAGE_STATUS_BUSY,
-    STORAGE_STATUS_ERROR
-} StorageStatus;
-
-typedef enum
-{
-    STORAGE_MODE_LOCAL = 0,
-    STORAGE_MODE_USB,
-    STORAGE_MODE_UART
-} StorageMode;
-
-typedef struct
-{
-    uint32_t total_mb;
-    uint32_t free_mb;
-    uint32_t used_mb;
-    uint8_t used_percent;
-
-    StorageStatus status;
-    StorageMode mode;
-} StorageDisplayInfo;
-
-FRESULT Storage_Mount(void);
-FRESULT Storage_Unmount(void);
-
-FRESULT Storage_FileTest(void);
-FRESULT Storage_AppendTest(void);
-
-FRESULT Storage_CreateDir(const char *path);
-FRESULT Storage_WriteTextFile(const char *path, const char *text);
-FRESULT Storage_ReadTextFile(const char *path, char *buffer, uint32_t buffer_size);
-
-FRESULT Storage_ListDir(const char *path, char *output, uint32_t output_size);
-FRESULT Storage_DeleteFile(const char *path);
-
-FRESULT Storage_GetCapacity(StorageCapacityInfo *info);
-
-FRESULT Storage_GetDisplayInfo(StorageDisplayInfo *info);
-
-
+bool Storage_ReadInfo(StorageInfo *info);
 
 #endif
