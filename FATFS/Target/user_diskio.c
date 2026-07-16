@@ -82,17 +82,31 @@ DSTATUS USER_initialize (
 )
 {
   /* USER CODE BEGIN INIT */
-	if (pdrv != 0)
-	    {
-	        return STA_NOINIT;
-	    }
 
-	if (SD_Init())
-	{
-		return 0;
-	}
+    if (pdrv != 0U)
+    {
+        return STA_NOINIT;
+    }
 
-	return STA_NOINIT;
+    /* Nếu đã init rồi thì không init lại */
+    if (SD_IsReady())
+    {
+        Stat = 0U;
+        return Stat;
+    }
+
+    /* Chỉ init khi chưa sẵn sàng */
+    if (SD_Init())
+    {
+        Stat = 0U;
+    }
+    else
+    {
+        Stat = STA_NOINIT;
+    }
+
+    return Stat;
+
   /* USER CODE END INIT */
 }
 
@@ -106,18 +120,23 @@ DSTATUS USER_status (
 )
 {
   /* USER CODE BEGIN STATUS */
-	// Cho FATPS biết thẻ đã sẵn sàng chưa
-	if (pdrv != 0)
-	    {
-	        return STA_NOINIT;
-	    }
 
-	if (SD_IsReady())
-	{
-		return 0;
-	}
+    if (pdrv != 0U)
+    {
+        return STA_NOINIT;
+    }
 
-	return STA_NOINIT;
+    if (SD_IsReady())
+    {
+        Stat = 0U;
+    }
+    else
+    {
+        Stat = STA_NOINIT;
+    }
+
+    return Stat;
+
   /* USER CODE END STATUS */
 }
 
@@ -137,27 +156,33 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
-	if (pdrv != 0 ||
-	        buff == NULL ||
-	        count == 0)
-	{
-		return RES_PARERR;
-	}
 
-	if (!SD_IsReady())
-	{
-		return RES_NOTRDY;
-	}
+    if (pdrv != 0U)
+    {
+        return RES_PARERR;
+    }
 
-	if (SD_ReadBlocks(
-			buff,
-			(uint32_t)sector,
-			(uint32_t)count))
-	{
-		return RES_OK;
-	}
+    if (buff == NULL || count == 0U)
+    {
+        return RES_PARERR;
+    }
 
-	return RES_ERROR;
+    if (!SD_IsReady())
+    {
+        return RES_NOTRDY;
+    }
+
+    if (SD_ReadBlocks(
+        (uint32_t)sector,
+        (uint8_t *)buff,
+        (uint32_t)count
+    ))
+    {
+        return RES_OK;
+    }
+
+    return RES_ERROR;
+
   /* USER CODE END READ */
 }
 
@@ -178,28 +203,33 @@ DRESULT USER_write (
 )
 {
   /* USER CODE BEGIN WRITE */
-  /* USER CODE HERE */
-	if (pdrv != 0 ||
-	        buff == NULL ||
-	        count == 0)
-	{
-		return RES_PARERR;
-	}
 
-	if (!SD_IsReady())
-	{
-		return RES_NOTRDY;
-	}
+    if (pdrv != 0U)
+    {
+        return RES_PARERR;
+    }
 
-	if (SD_WriteBlocks(
-			buff,
-			(uint32_t)sector,
-			(uint32_t)count))
-	{
-		return RES_OK;
-	}
+    if (buff == NULL || count == 0U)
+    {
+        return RES_PARERR;
+    }
 
-	return RES_ERROR;
+    if (!SD_IsReady())
+    {
+        return RES_NOTRDY;
+    }
+
+    if (SD_WriteBlocks(
+        (uint32_t)sector,
+        (const uint8_t *)buff,
+        (uint32_t)count
+    ))
+    {
+        return RES_OK;
+    }
+
+    return RES_ERROR;
+
   /* USER CODE END WRITE */
 }
 #endif /* _USE_WRITE == 1 */
@@ -219,55 +249,26 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
-	if (pdrv != 0)
-	    {
-	        return RES_PARERR;
-	    }
 
-	if (!SD_IsReady())
-	{
-		return RES_NOTRDY;
-	}
+    if (pdrv != 0U)
+    {
+        return RES_PARERR;
+    }
 
-	switch (cmd)
-	{
-	case CTRL_SYNC:
-		return RES_OK;
+    if (!SD_IsReady())
+    {
+        return RES_NOTRDY;
+    }
 
-	case GET_SECTOR_COUNT:
-		if (buff == NULL)
-		{
-			return RES_PARERR;
-		}
+    switch (cmd)
+    {
+        case CTRL_SYNC:
+            return RES_OK;
 
-		*(DWORD *)buff =
-			(DWORD)SD_GetSectorCount();
+        default:
+            return RES_PARERR;
+    }
 
-		return RES_OK;
-
-	case GET_SECTOR_SIZE:
-		if (buff == NULL)
-		{
-			return RES_PARERR;
-		}
-
-		*(WORD *)buff = 512U;
-
-		return RES_OK;
-
-	case GET_BLOCK_SIZE:
-		if (buff == NULL)
-		{
-			return RES_PARERR;
-		}
-
-		*(DWORD *)buff = 1U;
-
-		return RES_OK;
-
-	default:
-		return RES_PARERR;
-	}
   /* USER CODE END IOCTL */
 }
 #endif /* _USE_IOCTL == 1 */

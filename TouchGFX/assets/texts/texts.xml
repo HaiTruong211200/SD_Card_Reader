@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextDatabase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="texts.xsd" Version="4.25.0">
+  <Languages>
+    <Language Id="GB" />
+  </Languages>
+  <Texts>
+    <TextGroup Id="Group1" />
+    <TextGroup Id="Unsorted">
+      <Text Id="__SingleUse_LTWH" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">3630</Translation>
+      </Text>
+      <Text Id="__SingleUse_6FF8" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">120</Translation>
+      </Text>
+      <Text Id="__SingleUse_EXD6" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">3.75</Translation>
+      </Text>
+      <Text Id="__SingleUse_IPQ1" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">READY</Translation>
+      </Text>
+      <Text Id="__SingleUse_KNEJ" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">&lt;value&gt; MB</Translation>
+      </Text>
+      <Text Id="__SingleUse_CVIE" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">&lt;value&gt; MB</Translation>
+      </Text>
+      <Text Id="__SingleUse_EHTJ" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">&lt;value&gt; MB</Translation>
+      </Text>
+      <Text Id="__SingleUse_YTZ4" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">&lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_33B5" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Free :</Translation>
+      </Text>
+      <Text Id="__SingleUse_T24H" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Used :</Translation>
+      </Text>
+      <Text Id="__SingleUse_6HLR" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Total :</Translation>
+      </Text>
+      <Text Id="__SingleUse_84EI" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">Status :</Translation>
+      </Text>
+      <Text Id="__SingleUse_4DD3" Alignment="Left" TypographyId="Default">
+        <Translation Language="GB">SD CARD STATUS</Translation>
+      </Text>
+    </TextGroup>
+  </Texts>
+  <Typographies>
+    <Typography Id="Default" Font="verdana.ttf" Size="20" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" WildcardCharacters="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" />
+    <Typography Id="Large" Font="verdana.ttf" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+  </Typographies>
+</TextDatabase>
