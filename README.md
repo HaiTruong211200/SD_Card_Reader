@@ -19,11 +19,12 @@
 
 | STT | Họ tên | MSSV | Công việc |
 | --: | ------ | ---- | --------- |
-| 1   | *Điền sau* | *Điền sau* | *Điền sau* |
-| 2   | *Điền sau* | *Điền sau* | *Điền sau* |
-| 3   | *Điền sau* | *Điền sau* | *Điền sau* |
+| 1   | Trương Ngọc Hải | 20225309 | Nhóm trưởng |
+| 2   | Cao Văn Bảo | 20225166 | Thành viên |
+| 3   | Nguyễn Huy Mạnh | 20225143 | Thành viên |
+| 4   | Từ Minh Tuân | 20225422 | Thành viên |
 
-- **Tên nhóm:** *Điền sau*
+- **Tên nhóm:** Nhúng lẩu IOT
 
 ---
 
