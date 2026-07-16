@@ -246,11 +246,12 @@ int main(void)
   MX_SPI1_Init();
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-//  sd_result = SD_FileTest();
-//  sd_init_ok = SD_Init();
-//  sd_ready = SD_IsReady();
-//  sd_type = SD_GetCardType();
-//  sd_sector_count = SD_GetSectorCount();
+  sd_result = //  sd_result = SD_FileTest();
+();
+  sd_init_ok = SD_Init();
+  sd_ready = SD_IsReady();
+  sd_type = SD_GetCardType();
+  sd_sector_count = SD_GetSectorCount();
   // Test work 3
   mount_result = Storage_Mount();
 
