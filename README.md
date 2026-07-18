@@ -11,7 +11,7 @@
 3. Hiển thị thông tin dung lượng thẻ trên màn hình LCD (TouchGFX)
 4. Điều khiển đọc/ghi file từ máy tính qua **UART** (ST-Link VCP)
 
-> *(Thêm hình ảnh sơ đồ / demo tại đây nếu có)*
+
 
 ---
 
@@ -305,7 +305,7 @@ Có thể mở lại `.ioc` bằng CubeMX khi cần chỉnh SPI/UART/GPIO; giữ
 
 ## Kết quả / Demo
 
-- Demo sản phẩm: *(điền link Drive / video sau)*  
+- Demo sản phẩm: 
 - Checklist thử nghiệm gợi ý:
   - [ ] `SD_Init` / mount FatFs thành công  
   - [ ] TouchGFX hiện đúng dung lượng thẻ  
@@ -327,4 +327,4 @@ Có thể mở lại `.ioc` bằng CubeMX khi cần chỉnh SPI/UART/GPIO; giữ
 ## License
 
 Phần code ST HAL / Cube / TouchGFX tuân theo giấy phép tương ứng của STMicroelectronics.  
-Phần ứng dụng nhóm: *(điền sau)*.
+
