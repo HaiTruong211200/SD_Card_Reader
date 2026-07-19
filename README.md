@@ -343,6 +343,30 @@ Có thể mở lại `.ioc` bằng CubeMX khi cần chỉnh SPI/UART/GPIO; giữ
 - Không dùng USB Mass Storage trong phiên bản hiện tại — truy cập PC qua **UART + FatFs**.  
 - Heap FreeRTOS / stack GUI cần đủ lớn; UART chạy chung `defaultTask` để tránh hết heap khi tách task riêng.
 
+### Hạn chế hiện tại
+
+- Quy trình khởi tạo yêu cầu **CMD8** thành công nên chưa hỗ trợ đầy đủ thẻ SD version 1 cũ.
+- Driver nhận diện được SDSC/SDHC nhưng địa chỉ đọc/ghi hiện phù hợp chủ yếu với **SDHC/SDXC**; SDSC cần chuyển địa chỉ sector sang địa chỉ byte.
+- Tốc độ SPI vẫn dùng prescaler thấp để ưu tiên ổn định khi khởi tạo, chưa chuyển sang tốc độ cao sau khi thẻ sẵn sàng.
+- Đọc/ghi nhiều sector được thực hiện bằng cách lặp **CMD17/CMD24**, chưa dùng lệnh multi-block **CMD18/CMD25** hoặc DMA.
+- Chưa hỗ trợ phát hiện cắm/rút thẻ và tự động mount lại; nên lắp thẻ trước khi cấp nguồn hoặc reset.
+- Giao tiếp với PC chỉ là giao thức text qua UART, chưa hoạt động như một thiết bị **USB Mass Storage**.
+- Lệnh UART `READ` chỉ trả về khoảng 511 byte mỗi lần; danh sách thư mục và số lượng file hiển thị còn giới hạn.
+- FatFs đang tắt **Long File Name**, do đó tên file chỉ hỗ trợ định dạng 8.3.
+- Việc truy cập thẻ còn mang tính blocking; GUI và UART phải dùng chung mutex nên một thao tác lâu có thể làm tác vụ còn lại phải chờ.
+- Chưa có bộ kiểm thử tự động; việc đánh giá hiện chủ yếu dựa trên kiểm thử thủ công và các hàm chẩn đoán.
+
+### Hướng phát triển
+
+- Hoàn thiện hỗ trợ SD v1/v2, SDSC, SDHC và SDXC với cách tính địa chỉ đúng cho từng loại thẻ.
+- Tăng SPI clock sau khi khởi tạo; áp dụng DMA và **CMD18/CMD25** để nâng tốc độ đọc/ghi nhiều sector.
+- Bổ sung chân Card Detect, xử lý cắm/rút nóng và cơ chế tự động unmount/mount an toàn.
+- Mở rộng giao thức UART theo cơ chế phân mảnh dữ liệu, phân trang danh sách file, checksum và phản hồi lỗi chi tiết.
+- Bật Long File Name, hỗ trợ thư mục con và các thao tác file có kích thước lớn.
+- Xây dựng storage task riêng sử dụng queue để giảm thời gian blocking và điều phối truy cập từ GUI/UART tốt hơn.
+- Phát triển chế độ USB Mass Storage để máy tính nhận thẻ như một ổ đĩa di động.
+- Bổ sung thống kê tốc độ, nhật ký lỗi, cơ chế phục hồi timeout và bộ kiểm thử tự động cho driver SD, FatFs và UART.
+
 ---
 
 ## Tài liệu tham khảo
