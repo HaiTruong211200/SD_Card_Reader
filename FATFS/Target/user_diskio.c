@@ -77,6 +77,7 @@ Diskio_drvTypeDef  USER_Driver =
   * @param  pdrv: Physical drive number (0..)
   * @retval DSTATUS: Operation status
   */
+// Hàm này được gọi để khởi tạo thẻ ở tầng phần cứng bằng các command SD qua SPI
 DSTATUS USER_initialize (
 	BYTE pdrv           /* Physical drive nmuber to identify the drive */
 )
@@ -148,6 +149,7 @@ DSTATUS USER_status (
   * @param  count: Number of sectors to read (1..128)
   * @retval DRESULT: Operation result
   */
+// Hàm này được gọi để đọc dữ liệu từ thẻ
 DRESULT USER_read (
 	BYTE pdrv,      /* Physical drive nmuber to identify the drive */
 	BYTE *buff,     /* Data buffer to store read data */
@@ -195,6 +197,7 @@ DRESULT USER_read (
   * @retval DRESULT: Operation result
   */
 #if _USE_WRITE == 1
+// Hàm này được gọi để ghi dữ liệu vào thẻ
 DRESULT USER_write (
 	BYTE pdrv,          /* Physical drive nmuber to identify the drive */
 	const BYTE *buff,   /* Data to be written */

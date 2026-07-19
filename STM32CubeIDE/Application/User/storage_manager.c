@@ -23,6 +23,7 @@ char storage_file_names
     [STORAGE_MAX_FILES]
     [STORAGE_NAME_LENGTH];
 
+// Hàm này được gọi để mount hệ thống file FAT trên thẻ
 bool Storage_Mount(void)
 {
     storage_fr = f_mount(
@@ -247,7 +248,7 @@ bool Storage_CompareAfterAppendTest(void)
     );
 }
 
-
+// Hàm này được gọi để liệt kê các file trong thư mục gốc
 bool Storage_ListRoot(void)
 {
     DIR dir;
@@ -358,6 +359,7 @@ bool Storage_GetInfo(void)
     return true;
 }
 
+// Hàm này được gọi để đọc thông tin về bộ nhớ (tổng, sử dụng, còn trống, số file)
 bool Storage_ReadInfo(StorageInfo *info)
 {
     if (info == NULL)
@@ -392,6 +394,7 @@ bool Storage_ReadInfo(StorageInfo *info)
     return true;
 }
 
+// Hàm này được gọi để ghi dữ liệu vào file (tao hoac ghi de)
 bool Storage_WriteFile(const char *path, const void *data, UINT len, UINT *written)
 {
     FIL file;
@@ -431,6 +434,7 @@ bool Storage_WriteFile(const char *path, const void *data, UINT len, UINT *writt
     return (storage_fr == FR_OK);
 }
 
+// Hàm này được gọi để thêm dữ liệu vào file (ghi de)
 bool Storage_AppendFile(const char *path, const void *data, UINT len, UINT *written)
 {
     FIL file;
@@ -478,6 +482,7 @@ bool Storage_AppendFile(const char *path, const void *data, UINT len, UINT *writ
     return (storage_fr == FR_OK);
 }
 
+// Hàm này được gọi để đọc dữ liệu từ file
 bool Storage_ReadFile(const char *path, void *buf, UINT buflen, UINT *read)
 {
     FIL file;
@@ -513,6 +518,7 @@ bool Storage_ReadFile(const char *path, void *buf, UINT buflen, UINT *read)
     return (storage_fr == FR_OK);
 }
 
+// Hàm này được gọi để xóa file
 bool Storage_DeleteFile(const char *path)
 {
     if (path == NULL)
@@ -524,6 +530,7 @@ bool Storage_DeleteFile(const char *path)
     return (storage_fr == FR_OK);
 }
 
+// Hàm này được gọi để kiểm tra file có tồn tại không
 bool Storage_FileExists(const char *path)
 {
     FILINFO fno;

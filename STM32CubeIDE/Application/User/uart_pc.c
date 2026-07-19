@@ -53,6 +53,7 @@ void Storage_Unlock(void)
     UartPc_UnlockStorage();
 }
 
+// Hàm này được gọi khi có dữ liệu được nhận từ UART (nhan tung byte va dua vao ring buffer)
 void UartPc_OnRxIrq(void)
 {
     USART_TypeDef *usart;
@@ -99,6 +100,7 @@ void UartPc_OnRxIrq(void)
     }
 }
 
+// Hàm này được gọi để lấy 1 byte từ ring buffer
 static int UartPc_RxPop(uint8_t *out)
 {
     uint16_t tail;
@@ -240,6 +242,8 @@ static void UartPc_CmdPing(void)
 {
     UartPc_Println("OK PONG");
 }
+
+// Các command handler
 
 static void UartPc_CmdList(void)
 {
@@ -413,6 +417,7 @@ static void UartPc_CmdDelete(char *args)
     UartPc_Println("OK");
 }
 
+// Phân biệt LIST, READ, WRITE, DELETE dua vao cmd
 static void UartPc_HandleLine(char *line)
 {
     char cmd[16];
@@ -586,6 +591,7 @@ void UartPc_Init(UART_HandleTypeDef *huart)
     }
 }
 
+// Hàm này được gọi để xử lý các lệnh từ UART (Ghép các byte thành một dòng lệnh)
 void UartPc_Task(void *argument)
 {
     (void)argument;
@@ -593,7 +599,6 @@ void UartPc_Task(void *argument)
     UartPc_FlushRx();
     UartPc_Println("");
     UartPc_Println("=== Work4 UART PC ready ===");
-    UartPc_Println("PuTTY: Local echo=Force off, Local line editing=Force on");
     UartPc_Println("Type HELP then Enter. Do NOT use arrow keys.");
     UartPc_Print("> ");
 

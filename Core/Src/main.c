@@ -180,6 +180,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  // Tra loi cho cau hoi: cac ngoai vi nào được khởi tạo trong hàm này?
   MX_GPIO_Init();
   MX_CRC_Init();
   MX_I2C3_Init();
@@ -213,7 +214,9 @@ int main(void)
   }
 
   /* SD/FATFS init ngắn — tránh kéo dài trước khi GUI chạy */
+  // SD_Init(): khởi tạo thẻ ở tầng phần cứng bằng các command SD qua SPI
   (void)SD_Init();
+  // Storage_Mount(): gọi FatFs để mount hệ thống file FAT trên thẻ
   (void)Storage_Mount();
   HAL_Delay(50);
 
