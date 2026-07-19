@@ -17,14 +17,14 @@
 
 ## Tác giả
 
+- **Tên nhóm:** Nhúng lẩu IOT
+
 | STT | Họ tên | MSSV | Công việc |
 | --: | ------ | ---- | --------- |
-| 1   | Trương Ngọc Hải | 20225309 | Nhóm trưởng |
-| 2   | Cao Văn Bảo | 20225166 | Thành viên |
-| 3   | Nguyễn Huy Mạnh | 20225143 | Thành viên |
-| 4   | Từ Minh Tuân | 20225422 | Thành viên |
-
-- **Tên nhóm:** Nhúng lẩu IOT
+| 1   | Trương Ngọc Hải | 20225309 | Kết nối phần cứng, giao tiếp SPI và driver thẻ SD, kiểm thử và hoàn thiện tài liệu |
+| 2   | Từ Minh Tuân | 20225422 | Giao tiếp UART với PC, tích hợp FatFs và quản lý tệp, kiểm thử và hoàn thiện tài liệu |
+| 3   | Nguyễn Huy Mạnh | 20225143 | Thiết kế giao diện TouchGFX và hiển thị thông tin thẻ trên LCD |
+| 4   | Cao Văn Bảo | 20225166 | Tích hợp FreeRTOS, đồng bộ tài nguyên |
 
 ---
 
@@ -49,7 +49,7 @@
 | **FreeRTOS (CMSIS-RTOS v2)** | Đa nhiệm: GUI + UART |
 | **TouchGFX** | Giao diện LCD cảm ứng, hiển thị dung lượng thẻ |
 | **HAL SPI / UART** | Driver lớp thấp SPI1 (SD) và USART1 (debug/PC) |
-| **PuTTY / Hercules** hoặc `tools/uart_pc_cli.py` | Client trên PC |
+| **PuTTY / Hercules** | Client trên PC |
 
 ---
 
@@ -65,6 +65,48 @@
 | **PA7** (SPI1_MOSI) | MOSI / DI | STM32 → SD |
 | **5V** / **3.3V*** | VCC | Nguồn (*tuỳ module; ưu tiên đúng mức module*) |
 | **GND** | GND | Mass |
+
+### Ý nghĩa các tín hiệu và lệnh SD qua SPI
+
+> **Phân biệt:** `CS`, `SCK`, `MOSI`, `MISO` là các tín hiệu vật lý của SPI; `CMD0`, `CMD8`, `CMD17`... là lệnh của giao thức thẻ SD được truyền qua SPI.
+
+| Tín hiệu / thuật ngữ | Ý nghĩa | Mục đích trong dự án |
+| -------------------- | ------- | -------------------- |
+| **CS** (Chip Select) | Tín hiệu chọn thiết bị, tác động mức thấp | `CS = LOW` để bắt đầu trao đổi với thẻ; `CS = HIGH` để kết thúc và bỏ chọn thẻ |
+| **SCK / CLK** | Xung nhịp do STM32 tạo ra | Đồng bộ từng bit dữ liệu giữa STM32 và thẻ SD |
+| **MOSI / DI** | Master Out, Slave In | Truyền command, địa chỉ sector và dữ liệu từ STM32 đến thẻ |
+| **MISO / DO** | Master In, Slave Out | Nhận response, token và dữ liệu từ thẻ về STM32 |
+| **0xFF** | Byte giả (dummy byte) | Tạo thêm xung clock khi STM32 cần chờ hoặc đọc dữ liệu từ thẻ |
+| **R1** | Byte phản hồi trạng thái của thẻ | Cho biết lệnh thành công hay thẻ đang idle/lỗi; thường `0x01` là idle và `0x00` là sẵn sàng |
+| **Data token 0xFE** | Dấu hiệu bắt đầu một khối dữ liệu | Báo rằng 512 byte dữ liệu sector sắp được truyền |
+| **CRC** | Mã kiểm tra lỗi | CMD0 và CMD8 cần CRC hợp lệ khi khởi tạo; mỗi block dữ liệu có thêm 2 byte CRC |
+
+#### Các command được sử dụng
+
+| Command | Tên / ý nghĩa | Mục đích |
+| ------- | ------------- | -------- |
+| **CMD0** | GO_IDLE_STATE | Reset và đưa thẻ về trạng thái Idle để bắt đầu quy trình khởi tạo |
+| **CMD8** | SEND_IF_COND | Kiểm tra thẻ hỗ trợ SD version 2 và dải điện áp; mẫu `0x1AA` giúp xác nhận đường truyền |
+| **CMD55** | APP_CMD | Báo cho thẻ rằng command tiếp theo là một application command |
+| **ACMD41** | SD_SEND_OP_COND | Được gửi lặp sau CMD55 để yêu cầu thẻ hoàn tất khởi tạo; bit HCS đề nghị hỗ trợ thẻ dung lượng cao |
+| **CMD58** | READ_OCR | Đọc thanh ghi OCR; bit CCS dùng để phân biệt SDHC/SDXC với SDSC |
+| **CMD9** | SEND_CSD | Đọc thanh ghi CSD để lấy thông tin và tính dung lượng thẻ |
+| **CMD17** | READ_SINGLE_BLOCK | Đọc một sector 512 byte từ địa chỉ được yêu cầu |
+| **CMD24** | WRITE_SINGLE_BLOCK | Ghi một sector 512 byte vào địa chỉ được yêu cầu |
+
+#### Trình tự hoạt động
+
+**Khởi tạo thẻ:**
+
+1. Đưa `CS` lên HIGH và phát ít nhất 74 xung clock để thẻ vào chế độ SPI.
+2. Kéo `CS` xuống LOW, gửi **CMD0** để đưa thẻ vào Idle.
+3. Gửi **CMD8** để kiểm tra SD v2 và điện áp hoạt động.
+4. Lặp **CMD55 + ACMD41** đến khi phản hồi R1 bằng `0x00`, nghĩa là thẻ đã sẵn sàng.
+5. Gửi **CMD58** để đọc OCR và phân loại thẻ SDHC/SDXC hoặc SDSC.
+
+**Đọc sector:** gửi **CMD17** → chờ token `0xFE` → nhận 512 byte → đọc bỏ 2 byte CRC.
+
+**Ghi sector:** gửi **CMD24** → gửi token `0xFE` → gửi 512 byte → gửi 2 byte CRC → kiểm tra data response và chờ thẻ hết busy.
 
 **UART debug / PC (qua ST-Link VCP):**
 
@@ -114,7 +156,6 @@
 | UART PC protocol | `STM32CubeIDE/Application/User/uart_pc.c` | Parse lệnh HELP/LIST/READ/WRITE/… |
 | Main + RTOS | `Core/Src/main.c` | Init ngoại vi, FreeRTOS tasks |
 | TouchGFX Model | `TouchGFX/gui/src/model/Model.cpp` | Đọc `StorageInfo` định kỳ, cập nhật UI |
-| PC CLI | `tools/uart_pc_cli.py` | Client Python gửi lệnh qua COM |
 
 ### Luồng khởi động
 
@@ -267,20 +308,6 @@ void UartPc_OnRxIrq(void);          /* ISR đẩy ký tự vào ring buffer */
 | `APPEND <file> <text>` | Nối thêm nội dung | `OK written=…` |
 | `DELETE <file>` | Xóa file | `OK` |
 
-### Client Python
-
-```bash
-pip install pyserial
-
-python tools/uart_pc_cli.py COM5
-python tools/uart_pc_cli.py COM5 LIST
-python tools/uart_pc_cli.py COM5 WRITE demo.txt Hello from PC
-python tools/uart_pc_cli.py COM5 READ demo.txt
-python tools/uart_pc_cli.py COM5 INFO
-```
-
-*(Đổi `COM5` theo Device Manager trên Windows.)*
-
 ---
 
 ## Giao diện TouchGFX
@@ -305,13 +332,7 @@ Có thể mở lại `.ioc` bằng CubeMX khi cần chỉnh SPI/UART/GPIO; giữ
 
 ## Kết quả / Demo
 
-- Demo sản phẩm: 
-- Checklist thử nghiệm gợi ý:
-  - [ ] `SD_Init` / mount FatFs thành công  
-  - [ ] TouchGFX hiện đúng dung lượng thẻ  
-  - [ ] `PING` / `INFO` / `LIST` qua UART  
-  - [ ] `WRITE` → `READ` → `APPEND` → `DELETE`  
-  - [ ] GUI vẫn cập nhật khi UART đang idle (mutex không treo)
+[▶ Xem video demo sản phẩm trên Google Drive](https://drive.google.com/file/d/1wk_BiRm1yo9poMiqXb6vDgiFu_37Wtcm/view)
 
 ---
 
@@ -321,6 +342,12 @@ Có thể mở lại `.ioc` bằng CubeMX khi cần chỉnh SPI/UART/GPIO; giữ
 - Sector size: **512 byte**.  
 - Không dùng USB Mass Storage trong phiên bản hiện tại — truy cập PC qua **UART + FatFs**.  
 - Heap FreeRTOS / stack GUI cần đủ lớn; UART chạy chung `defaultTask` để tránh hết heap khi tách task riêng.
+
+---
+
+## Tài liệu tham khảo
+
+- SD Association, [*SD Specifications — Part 1: Physical Layer Simplified Specification, Version 2.00*](Part1_Physical_Layer_Simplified_Specification_Ver2.00.pdf).
 
 ---
 
