@@ -157,6 +157,10 @@
 | Main + RTOS | `Core/Src/main.c` | Init ngoại vi, FreeRTOS tasks |
 | TouchGFX Model | `TouchGFX/gui/src/model/Model.cpp` | Đọc `StorageInfo` định kỳ, cập nhật UI |
 
+**Hình dưới đây minh họa kiến trúc phần mềm phân tầng của hệ thống, trong đó các yêu cầu từ giao diện TouchGFX và giao thức UART được xử lý thông qua Storage Manager, sau đó truyền xuống FatFs, lớp `user_diskio` và driver SPI để truy cập thẻ microSD.**
+
+![Kiến trúc phần mềm của hệ thống](Kientrucphanmem.jpg)
+
 ### Luồng khởi động
 
 1. `HAL_Init` → clock → GPIO / SPI1 / USART1 / LCD / SDRAM / FatFs / TouchGFX  
